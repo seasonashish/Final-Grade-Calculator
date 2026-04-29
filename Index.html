@@ -237,6 +237,53 @@
       font-size: 15px;
     }
 
+    .target-card {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff, var(--soft-purple));
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 22px rgba(77, 25, 121, 0.1);
+    }
+
+    .target-card h2 {
+      margin: 0 0 8px;
+      color: var(--tcu-purple);
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .target-card p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .target-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .target-controls input {
+      max-width: 230px;
+    }
+
+    .target-result {
+      margin-top: 14px;
+      padding: 13px 15px;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--deep-purple);
+      border: 1px solid var(--border);
+      font-weight: 700;
+      text-align: center;
+    }
+
     .disclaimer {
       margin: 14px 0 0;
       text-align: center;
@@ -347,6 +394,16 @@
 
       <div class="message" id="message"></div>
 
+      <div class="target-card">
+        <h2>What score do I need?</h2>
+        <p>Leave one What-if score blank, enter its weight, then choose a target final grade.</p>
+        <div class="target-controls">
+          <input id="targetGrade" type="number" min="0" max="100" placeholder="Target grade, e.g. 90">
+          <button class="add-btn" onclick="calculateNeededScore()">Calculate Needed Score</button>
+        </div>
+        <div class="target-result" id="targetResult">Enter a target grade to preview the needed score.</div>
+      </div>
+
       <p class="disclaimer">This tool is an estimate. Please verify grading rules with your syllabus.</p>
     </div>
   </div>
@@ -361,11 +418,14 @@
     const messageEl = document.getElementById('message');
     const courseNameInput = document.getElementById('courseName');
     const titleEl = document.getElementById('title');
+    const targetGradeInput = document.getElementById('targetGrade');
+    const targetResultEl = document.getElementById('targetResult');
 
     // Dynamic calculator: this listens to the whole table,
     // so new rows and deleted rows are always handled correctly.
     gradeTable.addEventListener('input', calculateGrade);
     gradeTable.addEventListener('change', calculateGrade);
+    targetGradeInput.addEventListener('input', calculateNeededScore);
 
     courseNameInput.addEventListener('input', () => {
       const name = courseNameInput.value.trim();
@@ -499,12 +559,103 @@
       }
     }
 
+    function calculateNeededScore() {
+      const target = Number(targetGradeInput.value);
+
+      if (!Number.isFinite(targetGradeInput.valueAsNumber)) {
+        targetResultEl.textContent = 'Enter a target grade to preview the needed score.';
+        targetResultEl.style.background = '#ffffff';
+        targetResultEl.style.color = '#2d0f46';
+        targetResultEl.style.border = '1px solid #dacbed';
+        return;
+      }
+
+      const rows = Array.from(gradeTable.querySelectorAll('tr'));
+      let knownWeightedPoints = 0;
+      let blankWhatIfRows = [];
+
+      rows.forEach(row => {
+        const scoreInput = row.querySelector('.score-input');
+        const weightInput = row.querySelector('.weight-input');
+        const statusSelect = row.querySelector('.status-select');
+
+        if (!scoreInput || !weightInput || !statusSelect) {
+          return;
+        }
+
+        const scoreText = scoreInput.value.trim();
+        const score = Number(scoreInput.value);
+        const weight = Number(weightInput.value);
+        const status = statusSelect.value;
+
+        if (!Number.isFinite(weight) || weight <= 0) {
+          return;
+        }
+
+        if (status === 'what-if' && scoreText === '') {
+          blankWhatIfRows.push({ row, weight });
+        } else if (Number.isFinite(score)) {
+          knownWeightedPoints += score * (weight / 100);
+        }
+      });
+
+      if (blankWhatIfRows.length === 0) {
+        targetResultEl.textContent = 'Leave one What-if score blank so the app knows which item to solve for.';
+        targetResultEl.style.background = '#fee2e2';
+        targetResultEl.style.color = '#991b1b';
+        targetResultEl.style.border = '2px solid #ef4444';
+        return;
+      }
+
+      if (blankWhatIfRows.length > 1) {
+        targetResultEl.textContent = 'Please leave only one What-if score blank at a time.';
+        targetResultEl.style.background = '#fee2e2';
+        targetResultEl.style.color = '#991b1b';
+        targetResultEl.style.border = '2px solid #ef4444';
+        return;
+      }
+
+      const selectedRow = blankWhatIfRows[0].row;
+      const itemSelect = selectedRow.querySelector('.item-type');
+      const customInput = selectedRow.querySelector('.custom-item');
+
+      let itemName = itemSelect.value;
+      if (itemName === 'Add your own' && customInput.value.trim() !== '') {
+        itemName = customInput.value.trim();
+      }
+
+      const remainingWeight = blankWhatIfRows[0].weight / 100;
+      const neededScore = (target - knownWeightedPoints) / remainingWeight;
+
+      if (neededScore > 100) {
+        targetResultEl.textContent = `You would need ${neededScore.toFixed(2)}% on ${itemName}. That is above 100%, so this target may not be possible.`;
+        targetResultEl.style.background = '#fee2e2';
+        targetResultEl.style.color = '#991b1b';
+        targetResultEl.style.border = '2px solid #ef4444';
+      } else if (neededScore < 0) {
+        targetResultEl.textContent = `You have already reached this target based on the current inputs.`;
+        targetResultEl.style.background = '#dcfce7';
+        targetResultEl.style.color = '#166534';
+        targetResultEl.style.border = '2px solid #22c55e';
+      } else {
+        targetResultEl.textContent = `You need ${neededScore.toFixed(2)}% on ${itemName} to finish with ${target.toFixed(2)}%.`;
+        targetResultEl.style.background = '#dcfce7';
+        targetResultEl.style.color = '#166534';
+        targetResultEl.style.border = '2px solid #22c55e';
+      }
+    }
+
     function clearAll() {
       gradeTable.innerHTML = '';
       addRow();
       addRow();
       addRow();
       courseNameInput.value = '';
+      targetGradeInput.value = '';
+      targetResultEl.textContent = 'Enter a target grade to preview the needed score.';
+      targetResultEl.style.background = '#ffffff';
+      targetResultEl.style.color = '#2d0f46';
+      targetResultEl.style.border = '1px solid #dacbed';
       titleEl.textContent = 'Final Score Calculator';
       calculateGrade();
     }
@@ -514,6 +665,7 @@
       console.assert(typeof calculateGrade === 'function', 'Test failed: calculateGrade should exist.');
       console.assert(typeof showMessage === 'function', 'Test failed: showMessage should exist.');
       console.assert(typeof clearAll === 'function', 'Test failed: clearAll should exist.');
+      console.assert(typeof calculateNeededScore === 'function', 'Test failed: calculateNeededScore should exist.');
 
       showMessage(100);
       console.assert(messageEl.textContent.includes('100%'), 'Test failed: 100% message should show success text.');
