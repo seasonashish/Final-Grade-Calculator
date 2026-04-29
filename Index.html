@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Final Score Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    :root {
+      --tcu-purple: #4d1979;
+      --deep-purple: #2d0f46;
+      --light-purple: #f3ecff;
+      --soft-purple: #ede3ff;
+      --accent-gold: #c9a227;
+      --accent-gold-light: #fff4c7;
+      --ink: #1f1730;
+      --muted: #6b6078;
+      --border: #dacbed;
+      --danger-bg: #fee2e2;
+      --danger-text: #991b1b;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(201, 162, 39, 0.28), transparent 32%),
+        linear-gradient(135deg, var(--deep-purple), var(--tcu-purple) 55%, #6f2dbd);
+      color: var(--ink);
+    }
+
+    .container {
+      max-width: 950px;
+      margin: 40px auto 0;
+      padding: 20px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 18px 45px rgba(18, 5, 31, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      color: var(--tcu-purple);
+      font-size: 38px;
+      letter-spacing: -0.5px;
+    }
+
+    h1::after {
+      content: "";
+      display: block;
+      width: 92px;
+      height: 5px;
+      margin: 14px auto 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--tcu-purple), var(--accent-gold));
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      margin: 18px 0 26px;
+      font-size: 16px;
+    }
+
+    .course-name {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      font-size: 16px;
+      margin-bottom: 22px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    .course-name:focus,
+    input:focus,
+    select:focus {
+      border-color: var(--tcu-purple);
+      box-shadow: 0 0 0 4px rgba(77, 25, 121, 0.12);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+      margin-bottom: 18px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      color: var(--deep-purple);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    tbody tr {
+      background: var(--light-purple);
+      box-shadow: 0 4px 14px rgba(77, 25, 121, 0.08);
+    }
+
+    tbody tr td:first-child {
+      border-radius: 14px 0 0 14px;
+    }
+
+    tbody tr td:last-child {
+      border-radius: 0 14px 14px 0;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 11px;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 17px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(45, 15, 70, 0.18);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .add-btn {
+      background: linear-gradient(135deg, var(--tcu-purple), #6f2dbd);
+      color: white;
+    }
+
+    .reset-btn {
+      background: var(--accent-gold-light);
+      color: #5a4300;
+      border: 1px solid rgba(201, 162, 39, 0.35);
+    }
+
+    .delete-btn {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      padding: 8px 11px;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .result-box {
+      background: linear-gradient(180deg, #ffffff, var(--soft-purple));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+      box-shadow: 0 8px 22px rgba(77, 25, 121, 0.1);
+    }
+
+    .result-box h2 {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .result-box p {
+      margin: 10px 0 0;
+      font-size: 31px;
+      font-weight: 800;
+      color: var(--tcu-purple);
+    }
+
+    .result-box:first-child {
+      background: linear-gradient(135deg, var(--tcu-purple), #6f2dbd);
+      border-color: transparent;
+    }
+
+    .result-box:first-child h2,
+    .result-box:first-child p {
+      color: white;
+    }
+
+    .result-box:first-child p::after {
+      content: "";
+      display: block;
+      width: 44px;
+      height: 4px;
+      margin: 10px auto 0;
+      border-radius: 999px;
+      background: var(--accent-gold);
+    }
+
+    .message {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      display: none;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    footer {
+      text-align: center;
+      margin: 24px 0 28px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 13px;
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        margin: 18px auto 0;
+        padding: 14px;
+      }
+
+      .card {
+        padding: 20px;
+        border-radius: 20px;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        background: var(--light-purple);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        margin-bottom: 13px;
+        padding: 12px;
+      }
+
+      tbody tr td:first-child,
+      tbody tr td:last-child {
+        border-radius: 0;
+      }
+
+      td {
+        border: none;
+        padding: 8px 0;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        color: var(--deep-purple);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1 id="title">Final Score Calculator</h1>
+      <p class="subtitle">Enter your grades and weights to estimate your final course score.</p>
+
+      <input class="course-name" id="courseName" placeholder="Course name, e.g. Accounting 101" />
+
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Score (%)</th>
+            <th>Weight (%)</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="gradeTable"></tbody>
+      </table>
+
+      <div class="buttons">
+        <button class="add-btn" onclick="addRow()">+ Add Assignment/Exam</button>
+        <button class="reset-btn" onclick="resetRows()">Reset Example</button>
+      </div>
+
+      <div class="results">
+        <div class="result-box">
+          <h2>Projected Final Grade</h2>
+          <p id="finalGrade">0%</p>
+        </div>
+        <div class="result-box">
+          <h2>Total Weight Used</h2>
+          <p id="totalWeight">0%</p>
+        </div>
+        <div class="result-box">
+          <h2>Completed Grade So Far</h2>
+          <p id="completedGrade">0%</p>
+        </div>
+      </div>
+
+      <div class="message" id="message"></div>
+    </div>
+  </div>
+
+  <footer>Final Score Calculator • Built by Dr. G</footer>
+
+  <script>
+    const gradeTable = document.getElementById('gradeTable');
+    const finalGradeEl = document.getElementById('finalGrade');
+    const totalWeightEl = document.getElementById('totalWeight');
+    const completedGradeEl = document.getElementById('completedGrade');
+    const messageEl = document.getElementById('message');
+    const courseNameInput = document.getElementById('courseName');
+    const titleEl = document.getElementById('title');
+
+    courseNameInput.addEventListener('input', () => {
+      const name = courseNameInput.value.trim();
+      titleEl.textContent = name ? `Final Score Calculator - ${name}` : 'Final Score Calculator';
+    });
+
+    function addRow(name = '', score = '', weight = '', status = 'completed') {
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td data-label="Item">
+          <select class="item-type" onchange="toggleCustomItem(this)">
+            <option value="Assignment">Assignment</option>
+            <option value="Homework">Homework</option>
+            <option value="Quiz">Quiz</option>
+            <option value="Midterm">Midterm</option>
+            <option value="Final Exam">Final Exam</option>
+            <option value="Participation">Participation</option>
+            <option value="Project">Project</option>
+            <option value="Presentation">Presentation</option>
+            <option value="Lab">Lab</option>
+            <option value="Add your own">Add your own</option>
+          </select>
+          <input class="custom-item" type="text" placeholder="Type your own item" style="display:none; margin-top:8px;">
+        </td>
+        <td data-label="Score (%)"><input class="score-input" type="number" min="0" max="100" placeholder="90" value="${score}"></td>
+        <td data-label="Weight (%)"><input class="weight-input" type="number" min="0" max="100" placeholder="25" value="${weight}"></td>
+        <td data-label="Status">
+          <select class="status-select">
+            <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
+            <option value="what-if" ${status === 'what-if' ? 'selected' : ''}>What-if</option>
+          </select>
+        </td>
+        <td data-label="Remove"><button class="delete-btn" onclick="deleteRow(this)">Delete</button></td>
+      `;
+
+      row.querySelectorAll('input, select').forEach(input => {
+        input.addEventListener('input', calculateGrade);
+        input.addEventListener('change', calculateGrade);
+      });
+
+      const itemType = row.querySelector('.item-type');
+      const customItem = row.querySelector('.custom-item');
+      const commonItems = Array.from(itemType.options).map(option => option.value);
+
+      if (commonItems.includes(name)) {
+        itemType.value = name;
+      } else if (name) {
+        itemType.value = 'Add your own';
+        customItem.value = name;
+        customItem.style.display = 'block';
+      }
+
+      gradeTable.appendChild(row);
+      calculateGrade();
+    }
+
+    function deleteRow(button) {
+      button.closest('tr').remove();
+      calculateGrade();
+    }
+
+    function toggleCustomItem(select) {
+      const row = select.closest('tr');
+      const customInput = row.querySelector('.custom-item');
+
+      if (select.value === 'Add your own') {
+        customInput.style.display = 'block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+        customInput.value = '';
+      }
+
+      calculateGrade();
+    }
+
+    function calculateGrade() {
+      const rows = gradeTable.querySelectorAll('tr');
+      let totalWeightedScore = 0;
+      let totalWeight = 0;
+      let completedWeightedScore = 0;
+      let completedWeight = 0;
+
+      rows.forEach(row => {
+        const score = parseFloat(row.querySelector('.score-input').value);
+        const weight = parseFloat(row.querySelector('.weight-input').value);
+        const status = row.querySelector('.status-select').value;
+
+        if (!isNaN(score) && !isNaN(weight)) {
+          totalWeightedScore += score * (weight / 100);
+          totalWeight += weight;
+
+          if (status === 'completed') {
+            completedWeightedScore += score * (weight / 100);
+            completedWeight += weight;
+          }
+        }
+      });
+
+      finalGradeEl.textContent = totalWeightedScore.toFixed(2) + '%';
+      totalWeightEl.textContent = totalWeight.toFixed(1) + '%';
+
+      if (completedWeight > 0) {
+        const gradeSoFar = completedWeightedScore / (completedWeight / 100);
+        completedGradeEl.textContent = gradeSoFar.toFixed(2) + '%';
+      } else {
+        completedGradeEl.textContent = '0%';
+      }
+
+      showMessage(totalWeight);
+    }
+
+    function showMessage(totalWeight) {
+      messageEl.style.display = 'block';
+
+      if (Math.abs(totalWeight - 100) < 0.001) {
+        messageEl.textContent = '✔ Perfect! Your weights add up to 100%.';
+        messageEl.style.background = '#dcfce7';
+        messageEl.style.color = '#166534';
+        messageEl.style.border = '2px solid #22c55e';
+      } else {
+        messageEl.textContent = `⚠ Your weights add up to ${totalWeight.toFixed(1)}%. Please make sure they total 100%.`;
+        messageEl.style.background = '#fee2e2';
+        messageEl.style.color = '#991b1b';
+        messageEl.style.border = '2px solid #ef4444';
+      }
+    }
+
+    function resetRows() {
+      gradeTable.innerHTML = '';
+      addRow('Homework', 92, 25, 'completed');
+      addRow('Midterm', 84, 30, 'completed');
+      addRow('Final Exam', 88, 45, 'what-if');
+    }
+
+    function runTests() {
+      console.assert(typeof addRow === 'function', 'Test failed: addRow should exist.');
+      console.assert(typeof calculateGrade === 'function', 'Test failed: calculateGrade should exist.');
+      console.assert(typeof showMessage === 'function', 'Test failed: showMessage should exist.');
+
+      showMessage(100);
+      console.assert(messageEl.textContent.includes('100%'), 'Test failed: 100% message should show success text.');
+      console.assert(messageEl.style.background === 'rgb(220, 252, 231)', 'Test failed: 100% message should be green.');
+
+      showMessage(95);
+      console.assert(messageEl.textContent.includes('95.0%'), 'Test failed: non-100% message should show current total.');
+      console.assert(messageEl.style.background === 'rgb(254, 226, 226)', 'Test failed: non-100% message should be red.');
+    }
+
+    resetRows();
+    runTests();
+  </script>
+</body>
+</html>
