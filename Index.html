@@ -386,10 +386,7 @@
           <h2>Total Weight Used</h2>
           <p id="totalWeight">0%</p>
         </div>
-        <div class="result-box">
-          <h2>Completed Grade So Far</h2>
-          <p id="completedGrade">0%</p>
-        </div>
+        
       </div>
 
       <div class="message" id="message"></div>
@@ -414,7 +411,7 @@
     const gradeTable = document.getElementById('gradeTable');
     const finalGradeEl = document.getElementById('finalGrade');
     const totalWeightEl = document.getElementById('totalWeight');
-    const completedGradeEl = document.getElementById('completedGrade');
+    
     const messageEl = document.getElementById('message');
     const courseNameInput = document.getElementById('courseName');
     const titleEl = document.getElementById('title');
@@ -503,8 +500,7 @@
       const rows = Array.from(gradeTable.querySelectorAll('tr'));
       let totalWeightedScore = 0;
       let totalWeight = 0;
-      let completedWeightedScore = 0;
-      let completedWeight = 0;
+      
 
       rows.forEach(row => {
         const scoreInput = row.querySelector('.score-input');
@@ -523,22 +519,14 @@
           totalWeightedScore += score * (weight / 100);
           totalWeight += weight;
 
-          if (status === 'completed') {
-            completedWeightedScore += score * (weight / 100);
-            completedWeight += weight;
-          }
+          
         }
       });
 
       finalGradeEl.textContent = totalWeightedScore.toFixed(2) + '%';
       totalWeightEl.textContent = totalWeight.toFixed(1) + '%';
 
-      if (completedWeight > 0) {
-        const gradeSoFar = completedWeightedScore / (completedWeight / 100);
-        completedGradeEl.textContent = gradeSoFar.toFixed(2) + '%';
-      } else {
-        completedGradeEl.textContent = '0%';
-      }
+      
 
       showMessage(totalWeight);
     }
