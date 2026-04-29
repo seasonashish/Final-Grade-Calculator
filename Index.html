@@ -375,8 +375,8 @@
           </select>
           <input class="custom-item" type="text" placeholder="Type your own item" style="display:none; margin-top:8px;">
         </td>
-        <td data-label="Score (%)"><input class="score-input" type="number" min="0" max="100" placeholder="90" value="${score}"></td>
-        <td data-label="Weight (%)"><input class="weight-input" type="number" min="0" max="100" placeholder="25" value="${weight}"></td>
+        <td data-label="Score (%)"><input class="score-input" type="number" min="0" max="100" placeholder="Enter score" value="${score}"></td>
+        <td data-label="Weight (%)"><input class="weight-input" type="number" min="0" max="100" placeholder="Enter weight" value="${weight}"></td>
         <td data-label="Status">
           <select class="status-select">
             <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
@@ -428,18 +428,26 @@
     }
 
     function calculateGrade() {
-      const rows = gradeTable.querySelectorAll('tr');
+      const rows = Array.from(gradeTable.querySelectorAll('tr'));
       let totalWeightedScore = 0;
       let totalWeight = 0;
       let completedWeightedScore = 0;
       let completedWeight = 0;
 
       rows.forEach(row => {
-        const score = parseFloat(row.querySelector('.score-input').value);
-        const weight = parseFloat(row.querySelector('.weight-input').value);
-        const status = row.querySelector('.status-select').value;
+        const scoreInput = row.querySelector('.score-input');
+        const weightInput = row.querySelector('.weight-input');
+        const statusSelect = row.querySelector('.status-select');
 
-        if (!isNaN(score) && !isNaN(weight)) {
+        if (!scoreInput || !weightInput || !statusSelect) {
+          return;
+        }
+
+        const score = Number(scoreInput.value);
+        const weight = Number(weightInput.value);
+        const status = statusSelect.value;
+
+        if (Number.isFinite(score) && Number.isFinite(weight)) {
           totalWeightedScore += score * (weight / 100);
           totalWeight += weight;
 
@@ -481,9 +489,9 @@
 
     function resetRows() {
       gradeTable.innerHTML = '';
-      addRow('Homework', 92, 25, 'completed');
-      addRow('Midterm', 84, 30, 'completed');
-      addRow('Final Exam', 88, 45, 'what-if');
+      addRow();
+      addRow();
+      addRow();
     }
 
     function runTests() {
@@ -498,10 +506,33 @@
       showMessage(95);
       console.assert(messageEl.textContent.includes('95.0%'), 'Test failed: non-100% message should show current total.');
       console.assert(messageEl.style.background === 'rgb(254, 226, 226)', 'Test failed: non-100% message should be red.');
+
+      const savedRows = gradeTable.innerHTML;
+
+      gradeTable.innerHTML = '';
+      addRow('Homework', 90, 25, 'completed');
+      addRow('Midterm', 80, 25, 'completed');
+      addRow('Project', 100, 25, 'completed');
+      addRow('Final Exam', 70, 25, 'what-if');
+      calculateGrade();
+      console.assert(totalWeightEl.textContent === '100.0%', 'Test failed: four rows should total 100%.');
+      console.assert(finalGradeEl.textContent === '85.00%', 'Test failed: four rows should calculate projected grade correctly.');
+
+      const firstDeleteButton = gradeTable.querySelector('.delete-btn');
+      deleteRow(firstDeleteButton);
+      console.assert(totalWeightEl.textContent === '75.0%', 'Test failed: deleting a row should remove its weight from total.');
+      console.assert(finalGradeEl.textContent === '62.50%', 'Test failed: deleting a row should remove its score from projected grade.');
+
+      gradeTable.innerHTML = savedRows;
+      calculateGrade();
     }
 
-    resetRows();
+    // Start with empty rows instead of pre-filled example
+    addRow();
+    addRow();
+    addRow();
     runTests();
   </script>
 </body>
 </html>
+
