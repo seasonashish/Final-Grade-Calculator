@@ -237,6 +237,14 @@
       font-size: 15px;
     }
 
+    .disclaimer {
+      margin: 14px 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
     footer {
       text-align: center;
       margin: 24px 0 28px;
@@ -318,12 +326,13 @@
 
       <div class="buttons">
         <button class="add-btn" onclick="addRow()">+ Add Assignment/Exam</button>
-        <button class="reset-btn" onclick="resetRows()">Reset Example</button>
+        <button class="add-btn" onclick="calculateGrade()">Calculate</button>
+        <button class="reset-btn" onclick="clearAll()">Clear All</button>
       </div>
 
       <div class="results">
         <div class="result-box">
-          <h2>Projected Final Grade</h2>
+          <h2>Estimated Final Grade</h2>
           <p id="finalGrade">0%</p>
         </div>
         <div class="result-box">
@@ -337,6 +346,8 @@
       </div>
 
       <div class="message" id="message"></div>
+
+      <p class="disclaimer">This tool is an estimate. Please verify grading rules with your syllabus.</p>
     </div>
   </div>
 
@@ -488,17 +499,21 @@
       }
     }
 
-    function resetRows() {
+    function clearAll() {
       gradeTable.innerHTML = '';
       addRow();
       addRow();
       addRow();
+      courseNameInput.value = '';
+      titleEl.textContent = 'Final Score Calculator';
+      calculateGrade();
     }
 
     function runTests() {
       console.assert(typeof addRow === 'function', 'Test failed: addRow should exist.');
       console.assert(typeof calculateGrade === 'function', 'Test failed: calculateGrade should exist.');
       console.assert(typeof showMessage === 'function', 'Test failed: showMessage should exist.');
+      console.assert(typeof clearAll === 'function', 'Test failed: clearAll should exist.');
 
       showMessage(100);
       console.assert(messageEl.textContent.includes('100%'), 'Test failed: 100% message should show success text.');
