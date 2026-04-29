@@ -351,6 +351,11 @@
     const courseNameInput = document.getElementById('courseName');
     const titleEl = document.getElementById('title');
 
+    // Dynamic calculator: this listens to the whole table,
+    // so new rows and deleted rows are always handled correctly.
+    gradeTable.addEventListener('input', calculateGrade);
+    gradeTable.addEventListener('change', calculateGrade);
+
     courseNameInput.addEventListener('input', () => {
       const name = courseNameInput.value.trim();
       titleEl.textContent = name ? `Final Score Calculator - ${name}` : 'Final Score Calculator';
@@ -386,10 +391,6 @@
         <td data-label="Remove"><button class="delete-btn" onclick="deleteRow(this)">Delete</button></td>
       `;
 
-      row.querySelectorAll('input, select').forEach(input => {
-        input.addEventListener('input', calculateGrade);
-        input.addEventListener('change', calculateGrade);
-      });
 
       const itemType = row.querySelector('.item-type');
       const customItem = row.querySelector('.custom-item');
@@ -535,4 +536,3 @@
   </script>
 </body>
 </html>
-
